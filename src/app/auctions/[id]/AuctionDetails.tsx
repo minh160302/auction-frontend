@@ -21,7 +21,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   }, [auctionId]);
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
+    <div className="flex flex-col md:flex-row gap-4 h-full p-10">
       {auction ? <AuctionTimeline auction={auction} /> : <div>No content</div>}
 
       <UserPlaceBid auction_id={auctionId} />

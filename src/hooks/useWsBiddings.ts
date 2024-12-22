@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react';
  */
 const useWsFetchBids = (url: string) => {
     const [bids, setBids] = useState<Array<Bid>>([]);
+    // WebSocket room
+    const [destinationId, setDestinationId] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [ws, setWs] = useState<WebSocket | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
@@ -28,11 +30,14 @@ const useWsFetchBids = (url: string) => {
                 // setBids((prevMessages) => [...prevMessages, event.data]);
                 const { error, message, data } = JSON.parse(event.data);
                 if (!error) {
-                    setBids(data);
+                    console.log(data)
+                    setBids(data.bids);
+                    setDestinationId(data.destination_id)
                     setErrorMessage("");
                 }
                 else {
                     setErrorMessage(message);
+                    setDestinationId(data.destination_id);
                 }
             };
         }
@@ -64,7 +69,8 @@ const useWsFetchBids = (url: string) => {
     }
 
     return {
-        bids, isConnected, errorMessage,
+        bids, destinationId,
+        isConnected, errorMessage,
         sendMessage, placeBid
     };
 };

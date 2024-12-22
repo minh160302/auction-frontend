@@ -1,7 +1,15 @@
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function AuctionLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <section className="h-full">{children}</section>;
+  return (
+    <section data-theme="cupcake">
+      <ToastContainer />
+      {children}
+    </section>
+  );
 }
