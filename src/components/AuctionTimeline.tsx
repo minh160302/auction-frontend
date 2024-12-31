@@ -8,32 +8,33 @@ interface AuctionTimelineProps {
   auction: Auction;
 }
 
-type BidHistory = {
-  [auction_id: string]: Array<Bid>;
-};
 
 function AuctionTimeline({ auction }: AuctionTimelineProps) {
-  const [bidHistory, setBidHistory] = useState<BidHistory>({});
-  // const [highestBid, setHighestBid] = useState<number>(auction.starting_price);
-
   const auctionId = auction.auction_id;
-  const wsEndpoint =
-    process.env.NEXT_PUBLIC_WS_ENDPOINT || "ws://localhost:8080";
-  const { bids, destinationId, sendMessage, isConnected } =
-    useWsFetchBids(wsEndpoint);
+  const wsEndpoint = process.env.NEXT_PUBLIC_WS_ENDPOINT || "ws://localhost:8080";
+
+  const [bidHistory, setBidHistory] = useState<Array<Bid>>([]);
+  // const [highestBid, setHighestBid] = useState<number>(auction.starting_price);
+  const { bids, viewAuctionBids, isConnected, newestBid } = useWsFetchBids(wsEndpoint);
 
   useEffect(() => {
     if (isConnected) {
-      sendMessage(auctionId);
+      viewAuctionBids(auctionId);
     }
   }, [isConnected]);
 
   useEffect(() => {
-    setBidHistory({
-      ...bidHistory,
-      [destinationId]: bids,
-    });
-  }, [bids, destinationId]);
+    setBidHistory(bids);
+  }, [bids]);
+
+  useEffect(() => {
+    if (newestBid) {
+      setBidHistory([
+        newestBid,
+        ...bidHistory
+      ])
+    }
+  }, [newestBid])
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg max-w-sm mx-auto">
@@ -42,18 +43,18 @@ function AuctionTimeline({ auction }: AuctionTimelineProps) {
         <h1 className="text-4xl font-bold">Auction: {auction.name}</h1>
         <p className="text-gray-500">Description: {auction.description}</p>
         <p className="text-gray-500">
-          {bidHistory[auctionId] && bidHistory[auctionId].length > 0
-            ? `Current bid $${300} (total of ${
-                bidHistory[auctionId].length
-              } bids)`
-            : `No bids placed`}
+          {
+            bidHistory && bidHistory.length > 0
+              ? `Current bid $${300} (total of ${bidHistory.length} bids)`
+              : `No bids placed`
+          }
         </p>
       </div>
       <ul className="timeline timeline-vertical flex">
         {/* Bid History */}
-        {bidHistory[auctionId] &&
-          bidHistory[auctionId].length > 0 &&
-          bidHistory[auctionId].map((bid, index) => (
+        {bidHistory &&
+          bidHistory.length > 0 &&
+          bidHistory.map((bid, index) => (
             <li
               key={bid.bid_id}
               className="grid grid-cols-[var(--timeline-col-start,_minmax(0,_1fr))_auto_var(--timeline-col-end,_minmax(0,_4fr))] "
@@ -75,8 +76,7 @@ function AuctionTimeline({ auction }: AuctionTimelineProps) {
                 </svg>
               </div>
               <div className="timeline-end timeline-box">
-                User {bid.user_id} placed at{" "}
-                {new Date(bid.placed_at).toDateString()}
+                User {bid.user_id} placed at {new Date(bid.placed_at).toDateString()}
               </div>
               <hr />
             </li>

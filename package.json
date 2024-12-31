@@ -9,13 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.9.6",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@types/socket.io-client": "^3.0.0",
     "axios": "^1.7.9",
     "next": "15.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-toastify": "^11.0.2",
+    "socket.io-client": "^4.8.1",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

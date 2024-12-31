@@ -1,0 +1,81 @@
+import { Bid } from '@/schema';
+import { useEffect, useRef, useState } from 'react';
+
+enum Action {
+    VIEW_AUCTION_BIDS = "view_auctions_bid",
+    PLACE_BID = "place_bid"
+}
+
+/**
+ * TODO: Fetch new bids after a timestamp
+ */
+const useWsFetchBids = (url: string) => {
+    const [bids, setBids] = useState<Array<Bid>>([]);
+    // WebSocket room
+    const [destinationId, setDestinationId] = useState<string>("");
+    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [ws, setWs] = useState<WebSocket | null>(null);
+    const wsRef = useRef<WebSocket | null>(null);
+    const [isConnected, setIsConnected] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+            const socket = new WebSocket(url);
+            wsRef.current = socket;
+            setWs(socket);
+
+            socket.onopen = (e) => {
+                console.log("WS connected", e);
+                setIsConnected(true);
+            }
+
+            socket.onmessage = (event) => {
+                // setBids((prevMessages) => [...prevMessages, event.data]);
+                const { error, message, data } = JSON.parse(event.data);
+                if (!error) {
+                    setBids(data);
+                    setDestinationId(data.destination_id)
+                    setErrorMessage("");
+                }
+                else {
+                    setErrorMessage(message);
+                    setDestinationId(data.destination_id);
+                }
+            };
+        }
+
+        return () => {
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && isConnected) {
+                wsRef.current.close();
+                setIsConnected(false);
+            }
+        }
+    }, [url]);
+
+
+    /**
+     * TODO: optimize code
+     */
+    const viewAuctionBids = (auction_id: number | string) => {
+        if (ws && isConnected) {
+            const message = { "action": Action.VIEW_AUCTION_BIDS, "body": { auction_id } };
+            ws.send(JSON.stringify(message));
+        }
+    };
+
+    const placeBid = (auction_id: number | string, user_id: number | string, price: number) => {
+        if (ws && isConnected) {
+            const message = { "action": Action.PLACE_BID, "body": { auction_id, user_id, price } };
+            ws.send(JSON.stringify(message));
+        }
+    }
+
+    return {
+        bids, destinationId,
+        isConnected, errorMessage,
+        viewAuctionBids, placeBid
+    };
+};
+
+export default useWsFetchBids;

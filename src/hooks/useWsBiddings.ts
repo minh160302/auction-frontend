@@ -1,50 +1,71 @@
 import { Bid } from '@/schema';
+import { Action, PlaceBidRequest, ViewAuctionBidsRequest, WsAction, WsEventError, WsResponse } from '@/schema/ws';
 import { useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 
 /**
+ * TODO (latest): 
+ *      - current: WebSocket get all bid history
+ *      - modify: REST GET bids history, WebSocket to update newest bids
+ * 
+ * TODO (2):
+ *      - get highest bid price so far in cache
+ * 
  * TODO: Fetch new bids after a timestamp
  */
 const useWsFetchBids = (url: string) => {
     const [bids, setBids] = useState<Array<Bid>>([]);
-    // WebSocket room
-    const [destinationId, setDestinationId] = useState<string>("");
-    const [errorMessage, setErrorMessage] = useState<string>("");
-    const [ws, setWs] = useState<WebSocket | null>(null);
-    const wsRef = useRef<WebSocket | null>(null);
+    const [newestBid, setNewestBid] = useState<Bid>();
+    const [wsError, setWsError] = useState<string>("");
+    const [ws, setWs] = useState<Socket | null>(null);
+    const wsRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
 
 
     useEffect(() => {
-        if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
-            const socket = new WebSocket(url);
+        if (!wsRef.current || !wsRef.current.connected) {
+            const socket: Socket = io(url);
             wsRef.current = socket;
             setWs(socket);
 
-            socket.onopen = (e) => {
-                console.log("WS connected", e);
+            socket.on('connect', () => {
+                console.log('Connected to socket server');
                 setIsConnected(true);
-            }
+            });
 
-            socket.onmessage = (event) => {
-                // setBids((prevMessages) => [...prevMessages, event.data]);
-                const { error, message, data } = JSON.parse(event.data);
-                if (!error) {
-                    console.log(data)
-                    setBids(data.bids);
-                    setDestinationId(data.destination_id)
-                    setErrorMessage("");
+            socket.on('disconnect', () => {
+                console.log('Disconnected from socket server');
+            });
+
+
+            /**
+             * Event Listener
+             */
+            socket.on(Action.VIEW_AUCTION_BIDS, (event: WsResponse<Bid[]>) => {
+                console.log("view_auction_bids", event);
+                if (event.success === true) {
+                    setBids(event.data);
                 }
-                else {
-                    setErrorMessage(message);
-                    setDestinationId(data.destination_id);
+            })
+
+            socket.on(Action.PLACE_BID, (event: WsResponse<Bid>) => {
+                console.log("place_bid", event);
+                if (event.success === true) {
+                    setNewestBid(event.data)
                 }
-            };
+            })
+
+            // Handle Websocket event error
+            socket.on(Action.SERVER_COMMON, (event: WsResponse<WsEventError>) => {
+                if (!event.success)
+                    setWsError(event.data.message);
+            });
         }
 
         return () => {
-            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && isConnected) {
-                wsRef.current.close();
+            if (wsRef.current && wsRef.current.connected && isConnected) {
+                wsRef.current.disconnect();
                 setIsConnected(false);
             }
         }
@@ -54,24 +75,37 @@ const useWsFetchBids = (url: string) => {
     /**
      * TODO: optimize code
      */
-    const sendMessage = (auction_id: number | string) => {
+    const viewAuctionBids = (auction_id: number | string) => {
         if (ws && isConnected) {
-            const response = { "action": "sendmessage", "data": { "type": "view_action_bids", "body": { auction_id } } }
-            ws.send(JSON.stringify(response));
+            const payload: WsAction<ViewAuctionBidsRequest> = {
+                "action": Action.VIEW_AUCTION_BIDS,
+                "body": {
+                    "auction_id": auction_id.toString()
+                }
+            };
+            ws.emit('auction', payload);
         }
     };
 
     const placeBid = (auction_id: number | string, user_id: number | string, price: number) => {
         if (ws && isConnected) {
-            const response = { "action": "sendmessage", "data": { "type": "place_bid", "body": { auction_id, user_id, price } } }
-            ws.send(JSON.stringify(response));
+            const payload: WsAction<PlaceBidRequest> = {
+                "action": Action.PLACE_BID,
+                "body": {
+                    "auction_id": auction_id.toString(),
+                    "user_id": user_id.toString(),
+                    "price": price
+                }
+            };
+            ws.emit('auction', payload);
         }
     }
 
     return {
-        bids, destinationId,
-        isConnected, errorMessage,
-        sendMessage, placeBid
+        ws, isConnected,
+        bids, newestBid,
+        wsError, setWsError,
+        viewAuctionBids, placeBid
     };
 };
 

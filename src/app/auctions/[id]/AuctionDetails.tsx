@@ -13,10 +13,10 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   const [auction, setAuction] = useState<Auction>();
 
   useEffect(() => {
-    AxiosInstance.get(`/auctions/search/${auctionId}`)
+    AxiosInstance.get(`/auctions/${auctionId}`)
       .then((res) => res.data)
       .then((res) => {
-        if (!res.error && res.data.length > 0) setAuction(res.data[0]);
+        if (!res.error && res.data) setAuction(res.data);
       });
   }, [auctionId]);
 

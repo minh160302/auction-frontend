@@ -14,7 +14,7 @@ interface UserPlaceBidProps {
 
 function UserPlaceBid({ auction_id }: UserPlaceBidProps) {
     const wsEndpoint = process.env.NEXT_PUBLIC_WS_ENDPOINT || "ws://localhost:8080";
-    const { placeBid, destinationId, isConnected, errorMessage } = useWsFetchBids(wsEndpoint);
+    const { placeBid, isConnected, wsError, setWsError } = useWsFetchBids(wsEndpoint);
     const { user } = useAuthStore();
     const [price, setPrice] = useState<number>(0.0);
 
@@ -32,13 +32,11 @@ function UserPlaceBid({ auction_id }: UserPlaceBidProps) {
     };
 
     useEffect(() => {
-        if (errorMessage !== "" && destinationId !== "" && user) {
-            const [room_auction_id, room_user_id] = destinationId.split("_");
-            if (auction_id.toString() === room_auction_id && user.user_id.toString() === room_user_id) {
-                toast.error(errorMessage);
-            }
+        if (wsError !== "" && user) {
+            toast.error(wsError);
+            setWsError("");
         }
-    }, [errorMessage]);
+    }, [wsError]);
 
     return (
         user ?

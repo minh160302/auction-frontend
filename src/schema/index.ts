@@ -1,5 +1,5 @@
 export type User = {
-    user_id: number;
+    user_id: string;
     username: string,
     firstname: string,
     lastname: string,
@@ -35,4 +35,6 @@ export type Bid = {
     price: number
 };
 
-export type ActiveAuction = Auction & Product;
+export type ActiveAuction = Auction & {
+    Product: Product
+};
