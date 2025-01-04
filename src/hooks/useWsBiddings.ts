@@ -25,7 +25,9 @@ const useWsFetchBids = (url: string) => {
 
     useEffect(() => {
         if (!wsRef.current || !wsRef.current.connected) {
-            const socket: Socket = io(url);
+            const socket: Socket = io(url, {
+                transports: ["websocket", "polling"] // use WebSocket first, if available
+            });
             wsRef.current = socket;
             setWs(socket);
 
@@ -36,6 +38,11 @@ const useWsFetchBids = (url: string) => {
 
             socket.on('disconnect', () => {
                 console.log('Disconnected from socket server');
+            });
+
+            socket.on("connect_error", () => {
+                // revert to classic upgrade
+                socket.io.opts.transports = ["polling", "websocket"];
             });
 
 

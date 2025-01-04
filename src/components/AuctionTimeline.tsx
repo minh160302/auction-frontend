@@ -34,7 +34,7 @@ function AuctionTimeline({ auction }: AuctionTimelineProps) {
         ...bidHistory
       ])
     }
-  }, [newestBid])
+  }, [newestBid]);
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg max-w-sm mx-auto">
@@ -44,8 +44,8 @@ function AuctionTimeline({ auction }: AuctionTimelineProps) {
         <p className="text-gray-500">Description: {auction.description}</p>
         <p className="text-gray-500">
           {
-            bidHistory && bidHistory.length > 0
-              ? `Current bid $${300} (total of ${bidHistory.length} bids)`
+            auction?.bids_count > 0
+              ? `Current bid $${300} (total of ${auction.bids_count} bids)`
               : `No bids placed`
           }
         </p>

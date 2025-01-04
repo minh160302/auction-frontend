@@ -41,7 +41,7 @@ function UserPlaceBid({ auction_id }: UserPlaceBidProps) {
     return (
         user ?
             <div>
-                <div>CurrentUser {user.username}</div>
+                <div>Submit bid as user: {user.username}</div>
                 <div className="flex gap-2 mb-4">
                     <button
                         className="btn btn-active btn-accent"

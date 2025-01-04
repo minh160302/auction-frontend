@@ -23,7 +23,8 @@ export type Auction = {
     start_time: string,
     end_time: string,
     product_id: number,
-    starting_price: number
+    starting_price: number,
+    bids_count: number
 };
 
 
@@ -33,6 +34,14 @@ export type Bid = {
     user_id: number,
     placed_at: Date,
     price: number
+};
+
+export type Bookmark = {
+    bookmark_id?: number,
+    user_id: number,
+    auction_id: number,
+    created_at?: Date,
+    bookmark_type: string
 };
 
 export type ActiveAuction = Auction & {
