@@ -18,6 +18,6 @@ export default {
     require('daisyui'),
   ],
   daisyui: {
-    themes: ["light", "dark", "lofi"],
+    themes: ["light", "dark", "luxury"],
   },
 } satisfies Config;

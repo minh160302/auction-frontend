@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
     return (
         <ClerkProvider>
-            <html lang="en" data-theme="lofi">
+            <html lang="en" data-theme="luxury">
                 <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                     <Header />
 

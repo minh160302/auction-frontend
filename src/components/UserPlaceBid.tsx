@@ -40,9 +40,16 @@ function UserPlaceBid({ auction_id }: UserPlaceBidProps) {
 
     return (
         user ?
-            <div>
+            <div className="mt-4">
                 <div>Submit bid as user: {user.username}</div>
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2">
+                    <input
+                        type="number"
+                        placeholder="Type your bidding price"
+                        className="input input-bordered w-full max-w-xs"
+                        value={price}
+                        onChange={handleChange}
+                    />
                     <button
                         className="btn btn-active btn-accent"
                         onClick={handleUserPlaceBid}
@@ -51,14 +58,6 @@ function UserPlaceBid({ auction_id }: UserPlaceBidProps) {
                         Place bid
                     </button>
                 </div>
-
-                <input
-                    type="number"
-                    placeholder="Type your bidding price"
-                    className="input input-bordered w-full max-w-xs"
-                    value={price}
-                    onChange={handleChange}
-                />
             </div>
             : <div>No user</div>
     );

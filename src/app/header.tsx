@@ -19,7 +19,7 @@ export default function Header() {
     return (
         <div className="navbar">
             <div className="flex-1">
-                <a className="btn btn-ghost text-xl">daisyUI</a>
+                <a className="btn btn-ghost text-xl" href="/">daisyUI</a>
             </div>
             <div className="flex-none">
                 {isSignedIn ? <UserButton /> : <SignUpButton />}

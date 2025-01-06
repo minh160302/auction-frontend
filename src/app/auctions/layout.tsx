@@ -7,7 +7,7 @@ export default function AuctionLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section data-theme="lofi">
+    <section data-theme="luxury">
       <ToastContainer />
       {children}
     </section>

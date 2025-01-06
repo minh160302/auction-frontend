@@ -1,5 +1,6 @@
 "use client";
 import AuctionTimeline from "@/components/AuctionTimeline";
+import Countdown from "@/components/Countdown";
 import UserPlaceBid from "@/components/UserPlaceBid";
 import { Auction } from "@/schema";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -59,7 +60,8 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     <div className="flex flex-col md:flex-row gap-4 h-full p-10">
       {auction ? <AuctionTimeline auction={auction} /> : <div>No content</div>}
       <div>
-        <button className="btn" onClick={handleBookmark}>
+        {auction && <Countdown endTime={new Date(auction.end_time)} />}
+        <button className="btn mt-4" onClick={handleBookmark}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -74,7 +76,6 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
           </svg>
           Keep me updated
         </button>
-
         <UserPlaceBid auction_id={auctionId} />
       </div>
     </div>
